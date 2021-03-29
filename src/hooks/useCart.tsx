@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { api } from '../services/api';
 import { Product, Stock } from '../types';
@@ -22,30 +22,41 @@ interface CartContextData {
 const CartContext = createContext<CartContextData>({} as CartContextData);
 
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
+  
   const [cart, setCart] = useState<Product[]>(() => {
-    // const storagedCart = Buscar dados do localStorage
+    const storagedCart = localStorage.getItem('@RocketShoes:cart')
+  
 
-    // if (storagedCart) {
-    //   return JSON.parse(storagedCart);
-    // }
+    if (storagedCart) {
+      return JSON.parse(storagedCart);
+    }
 
     return [];
   });
 
   const addProduct = async (productId: number) => {
-    try {
-      // TODO
-    } catch {
-      // TODO
-    }
-  };
 
+   await api.get("http://localhost:3333/products")
+    .then((response)=>{
+      response.data.map((product:Product) => {
+       if(product.id === productId){
+          setCart([...cart,...[product]])
+         localStorage.setItem('@RocketShoes:cart', JSON.stringify([...cart,...[product]]))
+       }
+      })
+    })
+  };
   const removeProduct = (productId: number) => {
-    try {
-      // TODO
-    } catch {
-      // TODO
-    }
+
+      for(let i in cart){
+        console.log(i)
+        if(cart[i].id === productId){
+          setCart(cart.splice(Number(i), 1));
+          localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart.splice(Number(i),1)))
+          console.log(cart[i])
+        }
+      }
+
   };
 
   const updateProductAmount = async ({
